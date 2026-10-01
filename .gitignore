@@ -1,0 +1,11 @@
+bin/
+obj/
+.vs/
+*.user
+artifacts/
+.local/
+.env
+.env.*
+*.zip
+.ci-game/
+.ci-downloads/

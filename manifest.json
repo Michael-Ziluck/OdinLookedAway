@@ -1,0 +1,7 @@
+{
+  "name": "OdinLookedAway",
+  "version_number": "1.0.0",
+  "website_url": "",
+  "description": "Odin saw nothing. Suppresses cheat contamination, clears existing flags, and preserves achievement eligibility while retaining ordinary objectives and difficulty requirements.",
+  "dependencies": ["denikson-BepInExPack_Valheim-5.4.2350"]
+}

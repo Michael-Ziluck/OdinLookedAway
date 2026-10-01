@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <GamePath Condition="'$(GamePath)' == ''">E:\Games\SteamLibrary\steamapps\common\Valheim</GamePath>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <!-- The production DLL targets Unity/Mono's net48 API; checks run on .NET 8. -->
+    <NoWarn>$(NoWarn);NU1702</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../OdinLookedAway.csproj" />
+    <Reference Include="Mono.Cecil"><HintPath>$(GamePath)/BepInEx/core/Mono.Cecil.dll</HintPath><Private>false</Private></Reference>
+    <!-- Test harness only: the game's HarmonyX 2.9 runs in Unity/Mono and cannot
+         initialize on .NET 8. This package is never included in the mod ZIP. -->
+    <PackageReference Include="HarmonyX" Version="2.16.1" />
+    <Reference Include="BepInEx"><HintPath>$(GamePath)/BepInEx/core/BepInEx.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="assembly_valheim"><HintPath>$(GamePath)/valheim_Data/Managed/assembly_valheim.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="assembly_utils"><HintPath>$(GamePath)/valheim_Data/Managed/assembly_utils.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.CoreModule"><HintPath>$(GamePath)/valheim_Data/Managed/UnityEngine.CoreModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine"><HintPath>$(GamePath)/valheim_Data/Managed/UnityEngine.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+</Project>

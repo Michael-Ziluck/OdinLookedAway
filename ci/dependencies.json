@@ -1,0 +1,14 @@
+{
+  "gameMajorVersion": 1,
+  "referenceRevision": "2026-10-01",
+  "bepinex": {
+    "version": "5.4.2350",
+    "url": "https://thunderstore.io/package/download/denikson/BepInExPack_Valheim/5.4.2350/",
+    "sha256": "37A91C000B4E88F2ED7A4BD7D812239852D2E36CBF0FF0A9F5FAACFBA46B105F"
+  },
+  "steamcmd": {
+    "url": "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip",
+    "sha256": "7669B170DEE42DB8EE2273775ED7DFB2D173BDBA1B849F70D2C7B379290BCE13",
+    "serverAppId": "896660"
+  }
+}

@@ -1,0 +1,110 @@
+name: Build and release
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    outputs:
+      package: ${{ steps.package.outputs.file }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: 8.0.x
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .ci-game
+          key: valheim-windows-${{ hashFiles('ci/dependencies.json') }}
+      - name: Obtain game and framework references
+        shell: pwsh
+        run: ./ci/Prepare-Build.ps1
+      - name: Build, verify, and package
+        shell: pwsh
+        run: ./ci/Build.ps1 -GamePath $env:VALHEIM_BUILD_PATH
+      - name: Identify package
+        id: package
+        shell: pwsh
+        run: |
+          $manifest = Get-Content manifest.json -Raw | ConvertFrom-Json
+          $name = "$($manifest.name)-$($manifest.version_number)-Thunderstore.zip"
+          "file=$name" >> $env:GITHUB_OUTPUT
+          Copy-Item .ci-game/build-references.json artifacts/build-references.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: package
+          path: |
+            artifacts/*-Thunderstore.zip
+            artifacts/build-references.json
+          if-no-files-found: error
+          retention-days: 30
+
+  github-release:
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.RELEASE_PUBLISH_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: package
+          path: artifacts
+      - name: Publish versioned GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PACKAGE_FILE: artifacts/${{ needs.build.outputs.package }}
+        run: ./ci/Publish-GitHub.ps1 -PackageFile $env:PACKAGE_FILE
+
+  thunderstore:
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.THUNDERSTORE_PUBLISH_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: 8.0.x
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: package
+          path: artifacts
+      - name: Publish new package version
+        shell: pwsh
+        env:
+          THUNDERSTORE_API_TOKEN: ${{ secrets.THUNDERSTORE_API_TOKEN }}
+          PACKAGE_FILE: artifacts/${{ needs.build.outputs.package }}
+        run: ./ci/Publish.ps1 -PackageFile $env:PACKAGE_FILE -SkipExisting
+
+  hexium:
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.HEXIUM_PUBLISH_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: 8.0.x
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: package
+          path: artifacts
+      - name: Publish new package version
+        shell: pwsh
+        env:
+          HEXIUM_API_TOKEN: ${{ secrets.HEXIUM_API_TOKEN }}
+          PACKAGE_FILE: artifacts/${{ needs.build.outputs.package }}
+        run: ./ci/Publish-Hexium.ps1 -PackageFile $env:PACKAGE_FILE -SkipExisting

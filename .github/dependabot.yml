@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']
+  - package-ecosystem: nuget
+    directories:
+      - /
+      - /tests/checks
+    schedule:
+      interval: weekly
+    groups:
+      nuget-security:
+        applies-to: security-updates
+        patterns: ['*']
+      nuget-version:
+        applies-to: version-updates
+        patterns: ['*']
