@@ -17,6 +17,9 @@ same game and BepInEx references as the release build. It compiles only the prod
 project, not the .NET 8 test harness. This avoids the incomplete
 dependency resolution of GitHub's default no-build C# scan.
 
+The C# source root is `src`, so auxiliary XML scans do not include the dedicated
+server's downloaded Mono web-server configuration. The Actions scan uses the repository root.
+
 GitHub CodeQL default setup must remain disabled because this repository uses advanced
 setup in `.github/workflows/codeql.yml`. Other security features remain enabled.
 
