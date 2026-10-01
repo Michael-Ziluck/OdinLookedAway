@@ -1,35 +1,61 @@
 [CmdletBinding(SupportsShouldProcess)]
-param([Parameter(Mandatory)][string]$BackupDirectory, [switch]$RestoreSaves)
+param(
+    [Parameter(Mandatory)][string]$BackupDirectory,
+    [switch]$RestoreSaves
+)
+
 $ErrorActionPreference = 'Stop'
-if (Get-Process -Name valheim,valheim_server -ErrorAction SilentlyContinue) { throw 'Close Valheim and dedicated servers before rollback.' }
-$backup = (Resolve-Path -LiteralPath $BackupDirectory).Path
-$plugin = Get-Content -LiteralPath (Join-Path $backup 'plugin.json') -Raw | ConvertFrom-Json
-$saves = Get-Content -LiteralPath (Join-Path $backup 'saves.json') -Raw | ConvertFrom-Json
-if ($plugin.existed) {
-    if ((Get-FileHash -LiteralPath (Join-Path $backup 'previous-plugin.dll')).Hash -ne $plugin.oldHash) { throw 'Previous plugin backup is damaged.' }
+if (Get-Process -Name valheim, valheim_server -ErrorAction SilentlyContinue) {
+    throw 'Close Valheim and dedicated servers before rollback.'
 }
-if (!$plugin.existed -and (Test-Path -LiteralPath $plugin.target)) {
-    if ((Get-FileHash -LiteralPath $plugin.target).Hash -ne $plugin.deployedHash) { throw 'Installed DLL changed after deployment; refusing to remove it.' }
-}
-if ($RestoreSaves) {
-    foreach ($file in $saves.files) {
-        $path = [IO.Path]::GetFullPath((Join-Path $backup $file.backup))
-        if (!$path.StartsWith($backup.TrimEnd('\','/') + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { throw 'Invalid backup path.' }
-        if ((Get-FileHash -LiteralPath $path).Hash -ne $file.sha256) { throw "Damaged save backup: $path" }
+$backupDirectoryPath = (Resolve-Path -LiteralPath $BackupDirectory).Path
+$pluginBackup = Get-Content -LiteralPath (Join-Path $backupDirectoryPath 'plugin.json') -Raw | ConvertFrom-Json
+$saveBackup = Get-Content -LiteralPath (Join-Path $backupDirectoryPath 'saves.json') -Raw | ConvertFrom-Json
+
+if ($pluginBackup.existed) {
+    if ((Get-FileHash -LiteralPath (Join-Path $backupDirectoryPath 'previous-plugin.dll')).Hash -ne $pluginBackup.oldHash) {
+        throw 'Previous plugin backup is damaged.'
     }
 }
-if ($PSCmdlet.ShouldProcess($plugin.target, 'Restore previous plugin or remove OdinLookedAway')) {
-    if ($plugin.existed) {
-        Copy-Item -LiteralPath (Join-Path $backup 'previous-plugin.dll') -Destination $plugin.target -Force
-        if ((Get-FileHash -LiteralPath $plugin.target).Hash -ne $plugin.oldHash) { throw 'Plugin restore verification failed.' }
-    } elseif (Test-Path -LiteralPath $plugin.target) { Remove-Item -LiteralPath $plugin.target }
+if (!$pluginBackup.existed -and (Test-Path -LiteralPath $pluginBackup.target)) {
+    # A new-install rollback must not delete a DLL installed or changed later.
+    if ((Get-FileHash -LiteralPath $pluginBackup.target).Hash -ne $pluginBackup.deployedHash) {
+        throw 'Installed DLL changed after deployment; refusing to remove it.'
+    }
 }
 if ($RestoreSaves) {
-    foreach ($file in $saves.files) {
-        if ($PSCmdlet.ShouldProcess($file.original, 'Restore backed-up save file')) {
-            New-Item -ItemType Directory -Path (Split-Path $file.original -Parent) -Force | Out-Null
-            Copy-Item -LiteralPath (Join-Path $backup $file.backup) -Destination $file.original -Force
-            if ((Get-FileHash -LiteralPath $file.original).Hash -ne $file.sha256) { throw "Save restore verification failed: $($file.original)" }
+    # Validate every save backup before restoring anything; reject paths outside it.
+    $backupRootPrefix = $backupDirectoryPath.TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar
+    foreach ($saveFile in $saveBackup.files) {
+        $backupFilePath = [IO.Path]::GetFullPath((Join-Path $backupDirectoryPath $saveFile.backup))
+        if (!$backupFilePath.StartsWith($backupRootPrefix, [StringComparison]::OrdinalIgnoreCase)) {
+            throw 'Invalid backup path.'
+        }
+        if ((Get-FileHash -LiteralPath $backupFilePath).Hash -ne $saveFile.sha256) {
+            throw "Damaged save backup: $backupFilePath"
+        }
+    }
+}
+
+if ($PSCmdlet.ShouldProcess($pluginBackup.target, 'Restore previous plugin or remove OdinLookedAway')) {
+    if ($pluginBackup.existed) {
+        Copy-Item -LiteralPath (Join-Path $backupDirectoryPath 'previous-plugin.dll') -Destination $pluginBackup.target -Force
+        if ((Get-FileHash -LiteralPath $pluginBackup.target).Hash -ne $pluginBackup.oldHash) {
+            throw 'Plugin restore verification failed.'
+        }
+    }
+    elseif (Test-Path -LiteralPath $pluginBackup.target) {
+        Remove-Item -LiteralPath $pluginBackup.target
+    }
+}
+if ($RestoreSaves) {
+    foreach ($saveFile in $saveBackup.files) {
+        if ($PSCmdlet.ShouldProcess($saveFile.original, 'Restore backed-up save file')) {
+            New-Item -ItemType Directory -Path (Split-Path $saveFile.original -Parent) -Force | Out-Null
+            Copy-Item -LiteralPath (Join-Path $backupDirectoryPath $saveFile.backup) -Destination $saveFile.original -Force
+            if ((Get-FileHash -LiteralPath $saveFile.original).Hash -ne $saveFile.sha256) {
+                throw "Save restore verification failed: $($saveFile.original)"
+            }
         }
     }
 }

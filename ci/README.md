@@ -62,6 +62,12 @@ Local commands:
 ./ci/Publish-Hexium.ps1 -WhatIf
 ```
 
+The publication commands stop at the unpublished-project guard, including with `-WhatIf`.
+
+The original icon artwork is kept in `assets/icon-source.png`. Run `./ci/New-Icon.ps1`
+to regenerate the 256x256 `icon.png` used in the package, or pass `-SourcePath` to use
+another square image. Builds package the checked-in icon without regenerating it.
+
 References: [GitHub Actions](https://docs.github.com/en/actions),
 [Hexium packaging](https://hexium.gg/packaging), [Hexium API](https://hexium.gg/api/docs/),
 [Thunderstore CLI](https://github.com/thunderstore-io/thunderstore-cli/wiki).

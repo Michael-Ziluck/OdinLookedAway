@@ -1,6 +1,6 @@
 # Attribution
 
-Original implementation and icon are covered by the MIT license in `LICENSE`.
+The implementation is covered by the MIT license in `LICENSE`. The icon uses the maintainer-provided Golden Viking Warrior Emblem artwork.
 
 [Carrome/ModdedWithAchievements](https://github.com/Carrome/ModdedWithAchievements) was used as a behavioral reference. No source code or binary from that project is bundled. The implementation was audited independently against the installed Valheim assembly.
 
