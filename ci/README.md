@@ -1,10 +1,8 @@
-**Local and unpublished.** No remote Actions runs or releases have been created. Publication scripts are hard-blocked until explicitly authorized.
-
 # Automated builds and releases
 
 GitHub Actions builds, checks, and packages every push to `main`, every pull request targeting
 `main`, and manual workflow runs. ZIPs and a reference-version report are saved as workflow artifacts.
-Pull requests only build; publication is disabled for this unpublished project.
+Builds and security analysis are enabled. Publication jobs are disabled pending README review.
 
 Hosted Windows runners download the Valheim dedicated server anonymously with SteamCMD for its
 actual game assemblies, and a checksum-pinned BepInExPack. No Steam login or game assemblies are
@@ -28,9 +26,9 @@ Repository variables:
 
 | Variable | Value | Purpose |
 | --- | --- | --- |
-| RELEASE_PUBLISH_ENABLED | false | Create `vX.Y.Z` GitHub releases with the ZIP. |
-| THUNDERSTORE_PUBLISH_ENABLED | false | Upload new versions to DocZee on Thunderstore. |
-| HEXIUM_PUBLISH_ENABLED | false initially | Enable only after DocZee approval and API-token setup. |
+| RELEASE_PUBLISH_ENABLED | false | Create `vX.Y.Z` GitHub releases with the ZIP when enabled. |
+| THUNDERSTORE_PUBLISH_ENABLED | false | Upload new versions to DocZee on Thunderstore when enabled. |
+| HEXIUM_PUBLISH_ENABLED | false | Upload new versions to DocZee on Hexium when enabled. |
 
 Repository secrets:
 
@@ -40,10 +38,14 @@ Repository secrets:
 Packages use the Valheim community. Both registries receive the same built ZIP, with metadata
 derived from its manifest. Hexium's API documents Thunderstore-compatible upload endpoints;
 `ci/Publish-Hexium.ps1` uses the same pinned CLI against `https://valheim.hexium.gg`.
-Hexium publishing is scaffolded and disabled while the team is pending approval; the first actual
-upload still needs verification once approval and a token are available.
+Hexium publication uses the DocZee team token stored in the HEXIUM_API_TOKEN repository secret.
+Both tokens are provisioned for future releases; the local publication scripts also stop
+before network requests or credential reads while README review is pending.
 
 ## Release a change
+
+The first release is awaiting README review. When publication is authorized, remove the
+guards in `Publish.ps1` and `Publish-GitHub.ps1`, then enable the three repository variables.
 
 1. Update the version in the project, plugin declaration, and `manifest.json`; add changelog notes.
 2. Commit and push to `main`.
@@ -61,8 +63,6 @@ Local commands:
 ./ci/Publish.ps1 -WhatIf
 ./ci/Publish-Hexium.ps1 -WhatIf
 ```
-
-The publication commands stop at the unpublished-project guard, including with `-WhatIf`.
 
 The original icon artwork is kept in `assets/icon-source.png`. Run `./ci/New-Icon.ps1`
 to regenerate the 256x256 `icon.png` used in the package, or pass `-SourcePath` to use

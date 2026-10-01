@@ -3,8 +3,8 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-# Do not contact GitHub until publication is enabled.
-throw 'Publication is disabled for this unpublished project. Obtain explicit publication authorization before changing this guard.'
+# Leave releases disabled while the release README is being reviewed.
+throw 'Publication is disabled pending README review.'
 
 . (Join-Path $PSScriptRoot 'Package-Manifest.ps1')
 $manifest = Get-PackageManifest $PackageFile

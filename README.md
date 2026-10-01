@@ -2,7 +2,9 @@
 
 Odin saw nothing. Your achievements still count.
 
-Local, unpublished Valheim 1.0 BepInEx/Harmony mod. See [the package README](README.thunderstore.md) for features and multiplayer requirements, and [the verification checklist](VERIFICATION.md) for the remaining live tests.
+Valheim 1.0 BepInEx/Harmony mod. See [the package README](README.thunderstore.md) for features and multiplayer requirements, and [the verification checklist](VERIFICATION.md) for test coverage. The maintainer has completed in-game verification, including achievement behavior.
+
+The first release is awaiting README review. Build ZIPs are available from GitHub Actions artifacts.
 
 ## Build
 
@@ -21,8 +23,8 @@ The production DLL targets net48 for Unity/Mono. The test harness uses .NET 8 an
 Do not deploy into a running game. Use a disposable character/world for the first live tests. Save cleanup is permanent on the next save unless you restore backups.
 
 ```powershell
-# Preview; specify all relevant local or Steam save folders.
-./ci/Deploy.ps1 -ProfilePath "$env:APPDATA/r2modmanPlus-local/Valheim/profiles/UpdatedDefault" -SavePaths "$env:USERPROFILE/AppData/LocalLow/IronGate/Valheim" -WhatIf
+# Preview; use your Gale profile folder and all relevant local or Steam save folders.
+./ci/Deploy.ps1 -ProfilePath '<Gale profile folder>' -SavePaths "$env:USERPROFILE/AppData/LocalLow/IronGate/Valheim" -WhatIf
 # Install after closing the game. This first hash-verifies a save/plugin backup.
 ./ci/Deploy.ps1 -ProfilePath '<existing profile>' -SavePaths '<save root>', '<additional Steam save root>'
 # Restore the previous DLL (or remove this mod if it was not previously installed):
@@ -51,14 +53,14 @@ All clients and the host/server need the mod for complete session-wide coverage.
 
 ## Publication
 
-**Do not publish this build yet.** No remote repository or listing has been created. The established GitHub Actions build/CodeQL/Dependabot scaffolding is included locally; publication jobs require explicit repository variables and the publication scripts also contain hard guards. A later authorized release must add the source URL and explicitly remove those guards. Do not add service tokens to this repository.
+GitHub Actions builds and verifies changes on `main`. Thunderstore, Hexium, and GitHub Release jobs are configured but disabled pending README review; local publication scripts have the same restriction. When enabled, each registry skips versions it already has. See [CI documentation](ci/README.md) for release settings and local commands. Store service tokens in repository secrets or environment variables, never in source control.
 
 MIT licensed. [Reference and artwork attribution](ATTRIBUTION.md).
 
 ## Check out my other mods
 
 - [AnimalFeedGuard](https://thunderstore.io/c/valheim/p/DocZee/AnimalFeedGuard/)
-- [RanchingChickAddon](https://thunderstore.io/c/valheim/p/DocZee/Ranching_Chick_Addon/)
+- [RanchingChickAddon](https://thunderstore.io/c/valheim/p/DocZee/RanchingChickAddon/)
 - [HenEggPickup](https://thunderstore.io/c/valheim/p/DocZee/HenEggPickup/)
 
 Optional support: [Ko-fi](https://ko-fi.com/doczee).

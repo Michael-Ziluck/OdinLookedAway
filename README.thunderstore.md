@@ -28,14 +28,14 @@ No settings, server sync, Jotunn, or configuration manager are required. The beh
 
 **Back up your character and world before first use.** Cleared flags stay cleared when you save. Removing the DLL alone does not restore them; restoring the corresponding character/world backup does.
 
-This is an **unpublished build**. Installed-assembly checks pass, but gameplay and actual Steam achievement progress/unlocks have not yet been verified. Test on a disposable character/world first. Unknown or malformed serialized item formats are preserved with an error in the log, rather than risking lost items.
+In-game gameplay and achievement behavior have been verified by the maintainer. Automated compatibility checks target Valheim 1.0.16. Test on a disposable character/world before applying cleanup to your long-running saves. Unknown or malformed serialized item formats are preserved with an error in the log, rather than risking lost items.
 
-The local source includes build, verification, and save-aware rollback scripts. A public source link will be added when publication is authorized.
+The [GitHub repository](https://github.com/Michael-Ziluck/OdinLookedAway) includes source, build scripts, verification notes, and save-aware rollback tools. [Report issues here](https://github.com/Michael-Ziluck/OdinLookedAway/issues).
 
 ## Check out my other mods
 
 - [AnimalFeedGuard](https://thunderstore.io/c/valheim/p/DocZee/AnimalFeedGuard/): leave suitable animal food where your tamed animals can eat it.
-- [RanchingChickAddon](https://thunderstore.io/c/valheim/p/DocZee/Ranching_Chick_Addon/): configurable chick growth and growth-progress tooltips for Ranching.
+- [RanchingChickAddon](https://thunderstore.io/c/valheim/p/DocZee/RanchingChickAddon/): configurable chick growth and growth-progress tooltips for Ranching.
 - [HenEggPickup](https://thunderstore.io/c/valheim/p/DocZee/HenEggPickup/): automatically pick up eggs when enough adult hens are nearby.
 
 If you find my mods useful, you can [buy me a coffee](https://ko-fi.com/doczee).

@@ -8,8 +8,8 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-# Keep this guard before credential reads or network requests until publication is enabled.
-throw 'Publication is disabled for this unpublished project. Obtain explicit publication authorization before changing this guard.'
+# Leave uploads disabled while the release README is being reviewed.
+throw 'Publication is disabled pending README review.'
 
 $projectRoot = Split-Path $PSScriptRoot -Parent
 . (Join-Path $PSScriptRoot 'Package-Manifest.ps1')

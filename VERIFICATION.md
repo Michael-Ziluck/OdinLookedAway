@@ -8,9 +8,11 @@ Checks include current and legacy serialized inventory/item formats, unknown pre
 
 These are **not** live Unity/Mono patch-installation, gameplay, multiplayer, or Steam achievement tests.
 
-## In-game checklist — pending
+## In-game verification
 
-Use a disposable local character/world first; back up before testing. Install on all participants for multiplayer tests. Keep an unmodified backup with tainted items/entities/queues for testing cleanup of existing flags. The user elected to perform live tests themselves; nothing has been installed or cleaned by this task.
+The maintainer completed in-game verification using Gale and reported that all checks passed on October 1, 2026, including achievement behavior. This records the maintainer's result; individual before/after statistics, logs, and platform screenshots are not included here.
+
+The checklist below is retained for regression testing. Use a disposable local character/world first; back up before testing. Install on all participants for multiplayer tests. Keep an unmodified backup with tainted items/entities/queues for testing cleanup of existing flags.
 
 1. Start with BepInEx logging visible. Confirm `Odin looked away` appears and no patch-installation/unknown-payload errors occur. Review the achievement screen: no cheat-disqualification warning.
 2. Enable `devcommands`, run `god`, `ghost`, and repeated `spawn Wood 10` commands. Confirm no repeated confirmation prompts. Run `confirmcheats` and confirm the neutral mod message. Check that `m_usedCheats` is false and `PlayerStatType.Cheats` has not increased; an old historical count need not be zero.
@@ -22,4 +24,4 @@ Use a disposable local character/world first; back up before testing. Install on
 8. Choose an **ordinary, still-incomplete achievement objective** at the appropriate difficulty. Record its achievement-specific statistic, perform a qualifying action after using several dev commands, and confirm a real stat-progress event or legitimate unlock on Steam. Do not use a synthetic progress/unlock command as evidence. Repeat save/reload and confirm retained progress.
 9. Remove the mod and restore the test character/world backup using `ci/Rollback.ps1 -RestoreSaves`. Confirm original tainted flags return and the mod DLL is removed/restored as appropriate.
 
-Achievement support must remain labeled **unverified in-game** until step 8 succeeds. Keep the before/after statistic, relevant log lines, game version, difficulty, and any Steam confirmation as evidence. Past disqualified progress is not reconstructed.
+For future verification runs, confirm step 8 with an ordinary achievement objective. Keep the before/after statistic, relevant log lines, game version, difficulty, and any Steam confirmation as evidence. Past disqualified progress is not reconstructed.
