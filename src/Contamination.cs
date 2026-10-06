@@ -61,14 +61,17 @@ internal static class Contamination
                     if ((customCount & 128) != 0) customCount = ((customCount & 127) << 8) | reader.ReadByte();
                 }
                 ReadCustomData(reader, customCount);
-                if (version == 107 || version >= 109) flags.Add(checked((int)stream.Position));
-                if (version == 107 || version >= 109) reader.ReadByte();
+                if (version == 107 || version >= 109)
+                {
+                    flags.Add(checked((int)stream.Position));
+                    reader.ReadByte();
+                }
             }
             else
             {
                 reader.ReadString(); reader.ReadInt32(); reader.ReadSingle();
                 reader.ReadInt32(); reader.ReadInt32(); reader.ReadBoolean();
-                if (version >= 101) reader.ReadInt32();
+                reader.ReadInt32();
                 if (version >= 102) reader.ReadInt32();
                 if (version >= 103) { reader.ReadInt64(); reader.ReadString(); }
                 if (version >= 104) ReadCustomData(reader, reader.ReadInt32());
