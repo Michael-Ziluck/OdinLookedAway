@@ -162,9 +162,9 @@ public sealed class Plugin : BaseUnityPlugin
         private static IEnumerable<MethodBase> TargetMethods()
         {
             foreach (Type type in WriterTypes)
-            foreach (MethodInfo method in AccessTools.GetDeclaredMethods(type))
-                if (method.GetMethodBody() != null && PatchProcessor.GetOriginalInstructions(method).Any(i => i.opcode == OpCodes.Stfld && IsCheatField(i.operand)))
-                    yield return method;
+                foreach (MethodInfo method in AccessTools.GetDeclaredMethods(type))
+                    if (method.GetMethodBody() != null && PatchProcessor.GetOriginalInstructions(method).Any(i => i.opcode == OpCodes.Stfld && IsCheatField(i.operand)))
+                        yield return method;
         }
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
