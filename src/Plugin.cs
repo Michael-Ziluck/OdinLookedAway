@@ -61,9 +61,9 @@ public sealed class Plugin : BaseUnityPlugin
         if (hash != Contamination.InventoryKey || string.IsNullOrEmpty(text)) return text;
         try
         {
-            byte[] data = Convert.FromBase64String(text);
-            byte[] clean = CleanBytes(hash, data);
-            return ReferenceEquals(data, clean) ? text : Convert.ToBase64String(clean);
+            byte[] payload = Convert.FromBase64String(text);
+            byte[] cleaned = CleanBytes(hash, payload);
+            return ReferenceEquals(payload, cleaned) ? text : Convert.ToBase64String(cleaned);
         }
         catch (FormatException e)
         {

@@ -17,11 +17,11 @@ internal static class Contamination
     private static readonly HashSet<int> IndexedItemKeys = MakeIndexedItemKeys();
     private static HashSet<int> MakeIndexedItemKeys()
     {
-        var result = new HashSet<int>();
+        var keys = new HashSet<int>();
         // Current item/inventory indices are represented by a ushort. Includes
         // every vanilla armor-stand slot and the old inventory migration slots.
-        for (int i = 0; i <= ushort.MaxValue; i++) result.Add((i + "_itemData").GetStableHashCode());
-        return result;
+        for (int i = 0; i <= ushort.MaxValue; i++) keys.Add((i + "_itemData").GetStableHashCode());
+        return keys;
     }
     internal static bool IsItemKey(int hash) => hash == ItemKey || IndexedItemKeys.Contains(hash);
 
@@ -37,7 +37,7 @@ internal static class Contamination
         // versions or malformed data are left intact and reported by the caller.
         using var stream = new MemoryStream(original, false);
         using var reader = new BinaryReader(stream, Encoding.UTF8, true);
-        var flags = new List<int>();
+        var cheatOffsets = new List<int>();
         int version = inventory ? reader.ReadInt32() : reader.ReadByte();
         if (version < 101 || version > 109) throw new InvalidDataException($"Unsupported item version {version}.");
         int count = inventory ? (version >= 108 ? reader.ReadUInt16() : reader.ReadInt32()) : 1;
@@ -45,13 +45,13 @@ internal static class Contamination
         for (int i = 0; i < count; i++)
         {
             if (!inventory || version >= 108)
-                ReadPackedItem(reader, version, flags);
+                ReadPackedItem(reader, version, cheatOffsets);
             else
-                ReadLegacyItem(reader, version, flags);
+                ReadLegacyItem(reader, version, cheatOffsets);
         }
         if (stream.Position != stream.Length) throw new InvalidDataException("Unexpected trailing item data.");
         byte[]? cleaned = null;
-        foreach (int offset in flags)
+        foreach (int offset in cheatOffsets)
         {
             if ((original[offset] & 1) == 0) continue;
             cleaned ??= (byte[])original.Clone();
@@ -60,7 +60,7 @@ internal static class Contamination
         return cleaned ?? original;
     }
 
-    private static void ReadPackedItem(BinaryReader reader, int version, List<int> flags)
+    private static void ReadPackedItem(BinaryReader reader, int version, List<int> cheatOffsets)
     {
         reader.ReadInt32(); // Durability * 100
         reader.ReadBytesExact(3); // Grid x/y and world level
@@ -79,12 +79,12 @@ internal static class Contamination
         ReadCustomData(reader, customCount);
         if (version == 107 || version >= 109)
         {
-            flags.Add(checked((int)reader.BaseStream.Position));
+            cheatOffsets.Add(checked((int)reader.BaseStream.Position));
             reader.ReadByte();
         }
     }
 
-    private static void ReadLegacyItem(BinaryReader reader, int version, List<int> flags)
+    private static void ReadLegacyItem(BinaryReader reader, int version, List<int> cheatOffsets)
     {
         reader.ReadString();
         reader.ReadInt32();
@@ -100,7 +100,7 @@ internal static class Contamination
         if (version >= 106) reader.ReadBoolean();
         if (version == 107)
         {
-            flags.Add(checked((int)reader.BaseStream.Position));
+            cheatOffsets.Add(checked((int)reader.BaseStream.Position));
             reader.ReadBoolean();
         }
     }
