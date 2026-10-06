@@ -2,9 +2,11 @@
 
 Odin saw nothing. Your achievements still count.
 
-Valheim 1.0 BepInEx/Harmony mod. See [the package README](README.thunderstore.md) for features and multiplayer requirements, and [the verification checklist](VERIFICATION.md) for test coverage. The maintainer has completed in-game verification, including achievement behavior.
+OdinLookedAway is a BepInEx/Harmony mod for Valheim 1.0. It prevents cheat flags, cleans existing flags as character and world data pass through the patched methods, and keeps achievements eligible while preserving their objectives and difficulty requirements.
 
-The first release is awaiting README review. Build ZIPs are available from GitHub Actions artifacts.
+See [the mod-page README](README.thunderstore.md) for installation, multiplayer requirements, limitations, and troubleshooting. The maintainer has verified gameplay and achievement behavior. [The verification checklist](VERIFICATION.md) separates automated coverage from live regression tests.
+
+Local builds produce a Thunderstore ZIP. The GitHub Actions build workflow also saves the ZIP as a `package` artifact. Approved releases can be published to Thunderstore and Hexium using the scripts in `ci`.
 
 ## Build
 
@@ -14,7 +16,9 @@ The first release is awaiting README review. Build ZIPs are available from GitHu
 ./ci/Build.ps1 -GamePath 'E:/Games/SteamLibrary/steamapps/common/Valheim'
 ```
 
-Requires the .NET SDK 8 or newer, Valheim 1.0, and BepInEx. The build compiles the production mod, runs serialized-data and patch-target checks, verifies assembly member references, and creates `artifacts/OdinLookedAway-1.0.0-Thunderstore.zip` using `README.thunderstore.md` as the packaged `README.md`. Game/framework DLLs and test dependencies are not packaged or committed.
+Run from the repository root on Windows using PowerShell 7 (`pwsh`), with the .NET 8 SDK and runtime installed. `GamePath` must point to a Valheim installation containing `valheim_Data/Managed` and `BepInEx/core`; the declared package dependency is BepInExPack Valheim 5.4.2350. The default path is `E:/Games/SteamLibrary/steamapps/common/Valheim`. Compatibility checks target Valheim 1.0.16; other game versions need fresh checks.
+
+The build compiles the mod, runs serialized-data and patch-target checks, verifies assembly member references, and tests backup/deployment/rollback scripts against disposable fixtures. It writes `bin/Release/net48/OdinLookedAway.dll` and `artifacts/OdinLookedAway-1.0.0-Thunderstore.zip`. Packaging uses `README.thunderstore.md` as the ZIP's `README.md`; game/framework DLLs and test dependencies are excluded.
 
 The production DLL targets net48 for Unity/Mono. The test harness uses .NET 8 and test-only HarmonyX 2.16.1 because the installed game's default interface methods cannot be loaded by the Windows .NET Framework CLR, and its HarmonyX 2.9 cannot initialize on .NET 8. Tests inspect actual game metadata and exercise isolated hooks/transpiler IL; they do not install all detours into Unity or test Steam achievements.
 
@@ -35,6 +39,10 @@ Do not deploy into a running game. Use a disposable character/world for the firs
 
 The backup manifest is local and ignored by Git. Save backups include hidden files and reject junctions, symbolic links, and other reparse points in source or destination paths before creating the backup. Supply ordinary folders with no linked ancestors. Restore character and world backups together when reversing a cleanup. The scripts never edit the original game DLL.
 
+`Deploy.ps1` uses the existing DLL location, or creates `BepInEx/plugins/OdinLookedAway/OdinLookedAway.dll` for a new install. It refuses multiple installed copies. Pass `-Build` to build first, and `-GamePath` if that build needs a different installation. Rollbacks are stored under `.local/rollback`; keep that directory if you need to undo the deployment.
+
+`-SavePaths` must include every local or Steam Cloud cache folder you want backed up. The script copies files from disk; it does not fetch remote Steam Cloud saves. `-RestoreSaves` overwrites backed-up files at their original paths and does not delete files created after the backup. A rollback without that switch changes only the mod DLL.
+
 ## Implementation
 
 The audited installed assembly is Valheim `1.0.16`, SHA-256 `96CFC004F7F4A6F30D070BEF39EAFD79C466A137121C4665A2F19FB9C15C6127`.
@@ -49,11 +57,9 @@ The audited installed assembly is Valheim `1.0.16`, SHA-256 `96CFC004F7F4A6F30D0
 - Scope the confirmation bypass to `ConsoleCommand.RunAction`, restore it with an exception finalizer, and block only `PlayerStatType.Cheats` increments. Existing historical counts are left intact.
 - Do not globally falsify `IsCheatedAtAll()`, clear `Game.isModded`, change world modifiers, or patch objective/difficulty evaluation.
 
-All clients and the host/server need the mod for complete session-wide coverage. There is no server-synced configuration.
-
 ## Publication
 
-GitHub Actions builds and verifies changes on `main`. Thunderstore, Hexium, and GitHub Release jobs are configured but disabled pending README review; local publication scripts have the same restriction. When enabled, each registry skips versions it already has. See [CI documentation](ci/README.md) for release settings and local commands. Store service tokens in repository secrets or environment variables, never in source control.
+GitHub Actions builds and verifies pushes to `main`, pull requests targeting `main`, and manual runs. Thunderstore and Hexium uploads and GitHub releases run when their publication variables are enabled. When enabled, each registry skips versions it already has. See [CI documentation](ci/README.md) for release settings and local commands.
 
 MIT licensed. [Reference and artwork attribution](ATTRIBUTION.md).
 

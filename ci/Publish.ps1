@@ -8,8 +8,6 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-# Leave uploads disabled while the release README is being reviewed.
-throw 'Publication is disabled pending README review.'
 
 $projectRoot = Split-Path $PSScriptRoot -Parent
 . (Join-Path $PSScriptRoot 'Package-Manifest.ps1')

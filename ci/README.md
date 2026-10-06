@@ -2,7 +2,7 @@
 
 GitHub Actions builds, checks, and packages every push to `main`, every pull request targeting
 `main`, and manual workflow runs. ZIPs and a reference-version report are saved as workflow artifacts.
-Builds and security analysis are enabled. Publication jobs are disabled pending README review.
+Builds, security analysis, and publication jobs are enabled.
 
 Hosted Windows runners download the Valheim dedicated server anonymously with SteamCMD for its
 actual game assemblies, and a checksum-pinned BepInExPack. No Steam login or game assemblies are
@@ -29,9 +29,9 @@ Repository variables:
 
 | Variable | Set to | Purpose |
 | --- | --- | --- |
-| RELEASE_PUBLISH_ENABLED | false | Create `vX.Y.Z` GitHub releases with the ZIP when enabled. |
-| THUNDERSTORE_PUBLISH_ENABLED | false | Upload new versions to DocZee on Thunderstore when enabled. |
-| HEXIUM_PUBLISH_ENABLED | false | Upload new versions to DocZee on Hexium when enabled. |
+| RELEASE_PUBLISH_ENABLED | true | Create `vX.Y.Z` GitHub releases with the ZIP when enabled. |
+| THUNDERSTORE_PUBLISH_ENABLED | true | Upload new versions to DocZee on Thunderstore when enabled. |
+| HEXIUM_PUBLISH_ENABLED | true | Upload new versions to DocZee on Hexium when enabled. |
 
 Repository secrets:
 
@@ -42,13 +42,8 @@ Packages use the Valheim community. Both registries receive the same built ZIP, 
 derived from its manifest. Hexium's API documents Thunderstore-compatible upload endpoints;
 `ci/Publish-Hexium.ps1` uses the same pinned CLI against `https://valheim.hexium.gg`.
 Hexium publication uses the DocZee team token stored in the HEXIUM_API_TOKEN repository secret.
-Both tokens are provisioned for future releases; the local publication scripts also stop
-before network requests or credential reads while README review is pending.
 
 ## Release a change
-
-The first release is awaiting README review. When publication is authorized, remove the
-guards in `Publish.ps1` and `Publish-GitHub.ps1`, then enable the three repository variables.
 
 1. Update the version in the project, plugin declaration, and `manifest.json`; add changelog notes.
 2. Commit and push to `main`.
@@ -61,7 +56,7 @@ rerun on `main` to publish the current version there without republishing Thunde
 
 Local commands:
 
-The build command runs normally. Both publication previews below stop at the README-review guard while publication is disabled.
+Use `-WhatIf` to preview the package and destination without uploading.
 
 ```powershell
 ./ci/Build.ps1

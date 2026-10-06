@@ -3,8 +3,6 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-# Leave releases disabled while the release README is being reviewed.
-throw 'Publication is disabled pending README review.'
 
 . (Join-Path $PSScriptRoot 'Package-Manifest.ps1')
 $manifest = Get-PackageManifest $PackageFile
