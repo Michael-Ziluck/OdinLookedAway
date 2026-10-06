@@ -37,10 +37,6 @@ public sealed class Plugin : BaseUnityPlugin
     }
     private void OnDestroy() => harmony?.UnpatchSelf();
 
-    internal static void CleanInventory(Inventory inventory)
-    {
-        foreach (var item in inventory.GetAllItems()) item.m_cheated = false;
-    }
     internal static byte[] CleanBytes(int hash, byte[] bytes)
     {
         if (bytes == null) return bytes!;
