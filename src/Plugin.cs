@@ -193,14 +193,17 @@ public sealed class Plugin : BaseUnityPlugin
         private static readonly FieldInfo Items = AccessTools.Field(typeof(Inventory), "m_inventory");
         private static void Prefix(Inventory __instance, object[] __args)
         {
-            // Use the backing list: GetAllItems itself is one of the boundaries.
-            foreach (var item in (List<ItemDrop.ItemData>)Items.GetValue(__instance)) item.m_cheated = false;
+            ClearFlags(__instance);
             foreach (object arg in __args)
                 if (arg is ItemDrop.ItemData item) item.m_cheated = false;
         }
-        private static void Postfix(Inventory __instance)
+        private static void Postfix(Inventory __instance) => ClearFlags(__instance);
+
+        private static void ClearFlags(Inventory inventory)
         {
-            foreach (var item in (List<ItemDrop.ItemData>)Items.GetValue(__instance)) item.m_cheated = false;
+            // GetAllItems is patched too; calling it here would re-enter this hook.
+            foreach (ItemDrop.ItemData stored in (List<ItemDrop.ItemData>)Items.GetValue(inventory))
+                stored.m_cheated = false;
         }
     }
     [HarmonyPatch]
