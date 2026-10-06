@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Reject linked save or backup paths before copying and include hidden save files.
 - Use Valheim's hash function for serialized item keys and cooking slots.
 - Share inventory flag clearing and remove an unused entry point.
 - Separate packed and legacy payload readers without changing accepted formats or error handling.

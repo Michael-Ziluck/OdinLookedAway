@@ -27,6 +27,7 @@ try {
     }
 
     & (Join-Path $PSScriptRoot 'Verify-References.ps1') -GamePath $GamePath -PluginPath $pluginPath
+    & (Join-Path $PSScriptRoot 'Check-Backups.ps1')
     & (Join-Path $PSScriptRoot 'Check-Deployment.ps1')
     & (Join-Path $PSScriptRoot 'Package.ps1') -OutputDirectory $OutputDirectory
 }

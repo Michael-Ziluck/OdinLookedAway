@@ -33,7 +33,7 @@ Do not deploy into a running game. Use a disposable character/world for the firs
 ./ci/Rollback.ps1 -BackupDirectory '<directory printed by Deploy.ps1>' -RestoreSaves
 ```
 
-The backup manifest is local and ignored by Git. Restore character and world backups together when reversing a cleanup. The scripts never edit the original game DLL.
+The backup manifest is local and ignored by Git. Save backups include hidden files and reject junctions, symbolic links, and other reparse points in source or destination paths before creating the backup. Supply ordinary folders with no linked ancestors. Restore character and world backups together when reversing a cleanup. The scripts never edit the original game DLL.
 
 ## Implementation
 
