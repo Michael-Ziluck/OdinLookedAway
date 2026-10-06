@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Use Valheim's hash function for serialized item keys and cooking slots.
+- Share inventory flag clearing and remove an unused entry point.
+- Separate packed and legacy payload readers without changing accepted formats or error handling.
+- Add tests for supported item keys, truncated payloads, and incoming inventory items.
+
 ## 1.0.0 - 2026-10-01
 
 - Override the current cheat-bypass getter and achievement eligibility gate.

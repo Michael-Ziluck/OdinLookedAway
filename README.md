@@ -60,7 +60,7 @@ MIT licensed. [Reference and artwork attribution](ATTRIBUTION.md).
 ## Check out my other mods
 
 - [AnimalFeedGuard](https://thunderstore.io/c/valheim/p/DocZee/AnimalFeedGuard/)
-- [RanchingChickAddon](https://thunderstore.io/c/valheim/p/DocZee/RanchingChickAddon/)
+- [RanchingAddon](https://github.com/Michael-Ziluck/RanchingAddon)
 - [HenEggPickup](https://thunderstore.io/c/valheim/p/DocZee/HenEggPickup/)
 
 Optional support: [Ko-fi](https://ko-fi.com/doczee).

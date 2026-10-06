@@ -35,7 +35,7 @@ The [GitHub repository](https://github.com/Michael-Ziluck/OdinLookedAway) includ
 ## Check out my other mods
 
 - [AnimalFeedGuard](https://thunderstore.io/c/valheim/p/DocZee/AnimalFeedGuard/): leave suitable animal food where your tamed animals can eat it.
-- [RanchingChickAddon](https://thunderstore.io/c/valheim/p/DocZee/RanchingChickAddon/): configurable chick growth and growth-progress tooltips for Ranching.
+- [RanchingAddon](https://github.com/Michael-Ziluck/RanchingAddon): chick and Asksvin growth, plus growth and egg incubation information for Ranching.
 - [HenEggPickup](https://thunderstore.io/c/valheim/p/DocZee/HenEggPickup/): automatically pick up eggs when enough adult hens are nearby.
 
 If you find my mods useful, you can [buy me a coffee](https://ko-fi.com/doczee).

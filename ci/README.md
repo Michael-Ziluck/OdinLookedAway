@@ -27,7 +27,7 @@ setup in `.github/workflows/codeql.yml`. Other security features remain enabled.
 
 Repository variables:
 
-| Variable | Value | Purpose |
+| Variable | Set to | Purpose |
 | --- | --- | --- |
 | RELEASE_PUBLISH_ENABLED | false | Create `vX.Y.Z` GitHub releases with the ZIP when enabled. |
 | THUNDERSTORE_PUBLISH_ENABLED | false | Upload new versions to DocZee on Thunderstore when enabled. |
@@ -60,6 +60,8 @@ rerunning the workflow; each registry is checked independently. If only Hexium i
 rerun on `main` to publish the current version there without republishing Thunderstore.
 
 Local commands:
+
+The build command runs normally. Both publication previews below stop at the README-review guard while publication is disabled.
 
 ```powershell
 ./ci/Build.ps1
