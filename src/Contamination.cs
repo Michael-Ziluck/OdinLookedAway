@@ -45,40 +45,9 @@ internal static class Contamination
         for (int i = 0; i < count; i++)
         {
             if (!inventory || version >= 108)
-            {
-                reader.ReadInt32(); // Durability * 100
-                reader.ReadBytesExact(3); // Grid x/y and world level
-                byte header = reader.ReadByte();
-                if ((header & 4) != 0) reader.ReadUInt16();
-                if ((header & 8) != 0) reader.ReadUInt16();
-                if ((header & 16) != 0) reader.ReadInt32();
-                if ((header & 32) != 0) { reader.ReadInt64(); reader.ReadString(); }
-                if ((header & 64) != 0) reader.ReadInt32(); // Prefab hash
-                int customCount = 0;
-                if ((header & 128) != 0)
-                {
-                    customCount = reader.ReadByte();
-                    if ((customCount & 128) != 0) customCount = ((customCount & 127) << 8) | reader.ReadByte();
-                }
-                ReadCustomData(reader, customCount);
-                if (version == 107 || version >= 109)
-                {
-                    flags.Add(checked((int)stream.Position));
-                    reader.ReadByte();
-                }
-            }
+                ReadPackedItem(reader, version, flags);
             else
-            {
-                reader.ReadString(); reader.ReadInt32(); reader.ReadSingle();
-                reader.ReadInt32(); reader.ReadInt32(); reader.ReadBoolean();
-                reader.ReadInt32();
-                if (version >= 102) reader.ReadInt32();
-                if (version >= 103) { reader.ReadInt64(); reader.ReadString(); }
-                if (version >= 104) ReadCustomData(reader, reader.ReadInt32());
-                if (version >= 105) reader.ReadInt32();
-                if (version >= 106) reader.ReadBoolean();
-                if (version == 107) { flags.Add(checked((int)stream.Position)); reader.ReadBoolean(); }
-            }
+                ReadLegacyItem(reader, version, flags);
         }
         if (stream.Position != stream.Length) throw new InvalidDataException("Unexpected trailing item data.");
         byte[]? cleaned = null;
@@ -89,6 +58,51 @@ internal static class Contamination
             cleaned[offset] &= 0xfe;
         }
         return cleaned ?? original;
+    }
+
+    private static void ReadPackedItem(BinaryReader reader, int version, List<int> flags)
+    {
+        reader.ReadInt32(); // Durability * 100
+        reader.ReadBytesExact(3); // Grid x/y and world level
+        byte header = reader.ReadByte();
+        if ((header & 4) != 0) reader.ReadUInt16();
+        if ((header & 8) != 0) reader.ReadUInt16();
+        if ((header & 16) != 0) reader.ReadInt32();
+        if ((header & 32) != 0) { reader.ReadInt64(); reader.ReadString(); }
+        if ((header & 64) != 0) reader.ReadInt32(); // Prefab hash
+        int customCount = 0;
+        if ((header & 128) != 0)
+        {
+            customCount = reader.ReadByte();
+            if ((customCount & 128) != 0) customCount = ((customCount & 127) << 8) | reader.ReadByte();
+        }
+        ReadCustomData(reader, customCount);
+        if (version == 107 || version >= 109)
+        {
+            flags.Add(checked((int)reader.BaseStream.Position));
+            reader.ReadByte();
+        }
+    }
+
+    private static void ReadLegacyItem(BinaryReader reader, int version, List<int> flags)
+    {
+        reader.ReadString();
+        reader.ReadInt32();
+        reader.ReadSingle();
+        reader.ReadInt32();
+        reader.ReadInt32();
+        reader.ReadBoolean();
+        reader.ReadInt32();
+        if (version >= 102) reader.ReadInt32();
+        if (version >= 103) { reader.ReadInt64(); reader.ReadString(); }
+        if (version >= 104) ReadCustomData(reader, reader.ReadInt32());
+        if (version >= 105) reader.ReadInt32();
+        if (version >= 106) reader.ReadBoolean();
+        if (version == 107)
+        {
+            flags.Add(checked((int)reader.BaseStream.Position));
+            reader.ReadBoolean();
+        }
     }
 
     private static void ReadCustomData(BinaryReader reader, int count)
