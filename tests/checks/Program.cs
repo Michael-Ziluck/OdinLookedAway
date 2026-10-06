@@ -52,12 +52,13 @@ internal static class Program
     }
     private static void HashChecks()
     {
-        foreach (string key in new[] { "", "cheated", "cheatedQueued", "items", "itemData", "slot3", "a\0b", "ab\0c", "\u03a9\u2661", "\ud83d\ude00" })
-            Assert(Contamination.StableHash(key) == key.GetStableHashCode(), "payload hashes agree with the game's hash function");
+        foreach (var pair in new[] { ("", 371857150), ("cheated", -153476768), ("cheatedQueued", 554813359),
+            ("items", -938864442), ("itemData", 949524933), ("slot3", -858295525),
+            ("a\0b", 372029373), ("ab\0c", 1093630535), ("\u03a9\u2661", 1721921120), ("\ud83d\ude00", 1126268081) })
+            Assert(pair.Item1.GetStableHashCode() == pair.Item2, "game hash agrees with characterized payload identities");
         for (int index = 0; index <= ushort.MaxValue; index++)
         {
             string key = index + "_itemData";
-            Assert(Contamination.StableHash(key) == key.GetStableHashCode(), "indexed item hashes agree with the game's hash function");
             Assert(Contamination.IsItemKey(key.GetStableHashCode()), "every supported indexed item key is recognized");
         }
         Assert(Contamination.EntityKey == ZDOVars.s_cheated && Contamination.QueueKey == ZDOVars.s_cheatedQueued, "marker constants agree with actual game constants");
@@ -158,7 +159,7 @@ internal static class Program
         Assert(ReferenceEquals(invalid, Plugin.CleanBytes(123, invalid)), "unrelated byte-array keys are untouched");
         var bytes = Fixture(true, 109).bytes;
         Assert(!Plugin.CleanBytes(Contamination.InventoryKey, bytes).SequenceEqual(bytes), "container bytes clean");
-        Assert(!Plugin.CleanBytes(Contamination.StableHash("7_itemData"), Fixture(false, 109).bytes).SequenceEqual(Fixture(false, 109).bytes), "indexed item-stand bytes clean");
+        Assert(!Plugin.CleanBytes("7_itemData".GetStableHashCode(), Fixture(false, 109).bytes).SequenceEqual(Fixture(false, 109).bytes), "indexed item-stand bytes clean");
         string legacy = Convert.ToBase64String(Fixture(true, 107).bytes);
         Assert(Plugin.CleanString(Contamination.InventoryKey, legacy) != legacy, "legacy base64 containers clean");
     }
@@ -210,7 +211,7 @@ internal static class Program
         SetInt(id, Contamination.QueueKey, 1);
         Assert(ZDOExtraData.GetInt(id, Contamination.EntityKey, -1) == 0, "entity marking suppressed");
         Assert(ZDOExtraData.GetInt(id, Contamination.QueueKey, -1) == 0, "production marking suppressed");
-        ZDOExtraData.Set(id, Contamination.StableHash("slot3"), "RawMeat");
+        ZDOExtraData.Set(id, "slot3".GetStableHashCode(), "RawMeat");
         SetInt(id, Contamination.QueueKey + 3, 1);
         Assert(ZDOExtraData.GetInt(id, Contamination.QueueKey + 3, -1) == 0, "cooking slot marking suppressed");
         ZDOExtraData.Set(id, 123, 7);
@@ -227,7 +228,7 @@ internal static class Program
         ZDOExtraData.Set(id, Contamination.QueueKey + 4, 9); // Not a cooking slot
         ZDOExtraData.Set(id, Contamination.InventoryKey, fixture);
         ZDOExtraData.Set(id, Contamination.ItemKey, Fixture(false, 109).bytes);
-        ZDOExtraData.Set(id, Contamination.StableHash("7_itemData"), Fixture(false, 109).bytes);
+        ZDOExtraData.Set(id, "7_itemData".GetStableHashCode(), Fixture(false, 109).bytes);
         ZDOExtraData.Set(id, Contamination.InventoryKey, Convert.ToBase64String(Fixture(true, 107).bytes));
         ZDOExtraData.PrepareSave();
         try
@@ -253,7 +254,7 @@ internal static class Program
         Assert(ZDOExtraData.GetInt(id, Contamination.EntityKey, -1) == -1, "record cleanup removes the persisted marker");
         Assert(ZDOExtraData.GetInt(id, Contamination.QueueKey + 3, -1) == -1, "record cleanup removes cooking queue markers");
         Assert(ZDOExtraData.GetInt(id, Contamination.QueueKey + 4) == 9, "record cleanup preserves unrelated integers");
-        foreach (int key in new[] { Contamination.InventoryKey, Contamination.ItemKey, Contamination.StableHash("7_itemData") })
+        foreach (int key in new[] { Contamination.InventoryKey, Contamination.ItemKey, "7_itemData".GetStableHashCode() })
         {
             byte[] stored = ZDOExtraData.GetByteArray(id, key);
             Assert(ReferenceEquals(stored, Contamination.CleanPayload(key, stored)), "existing unloaded item bytes are cleaned");

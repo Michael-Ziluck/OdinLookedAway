@@ -10,32 +10,17 @@ namespace OdinLookedAway;
 // to clean an unloaded inventory: that can lose items from unavailable mods.
 internal static class Contamination
 {
-    internal static int StableHash(string text)
-    {
-        unchecked
-        {
-            int a = 5381, b = a;
-            for (int i = 0; i < text.Length && text[i] != '\0'; i += 2)
-            {
-                a = ((a << 5) + a) ^ text[i];
-                if (i == text.Length - 1 || text[i + 1] == '\0') break;
-                b = ((b << 5) + b) ^ text[i + 1];
-            }
-            return a + b * 1566083941;
-        }
-    }
-
-    internal static readonly int EntityKey = StableHash("cheated");
-    internal static readonly int QueueKey = StableHash("cheatedQueued");
-    internal static readonly int InventoryKey = StableHash("items");
-    internal static readonly int ItemKey = StableHash("itemData");
+    internal static readonly int EntityKey = "cheated".GetStableHashCode();
+    internal static readonly int QueueKey = "cheatedQueued".GetStableHashCode();
+    internal static readonly int InventoryKey = "items".GetStableHashCode();
+    internal static readonly int ItemKey = "itemData".GetStableHashCode();
     private static readonly HashSet<int> IndexedItemKeys = MakeIndexedItemKeys();
     private static HashSet<int> MakeIndexedItemKeys()
     {
         var result = new HashSet<int>();
         // Current item/inventory indices are represented by a ushort. Includes
         // every vanilla armor-stand slot and the old inventory migration slots.
-        for (int i = 0; i <= ushort.MaxValue; i++) result.Add(StableHash(i + "_itemData"));
+        for (int i = 0; i <= ushort.MaxValue; i++) result.Add((i + "_itemData").GetStableHashCode());
         return result;
     }
     internal static bool IsItemKey(int hash) => hash == ItemKey || IndexedItemKeys.Contains(hash);

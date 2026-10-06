@@ -58,7 +58,7 @@ public sealed class Plugin : BaseUnityPlugin
         int slot = unchecked(hash - Contamination.QueueKey);
         // Cooking slot markers are an arithmetic offset, not a string hash.
         // Match the actual slot record, so unrelated integer keys are untouched.
-        return slot > 0 && ZDOExtraData.GetString(zid, Contamination.StableHash("slot" + slot), null) != null;
+        return slot > 0 && ZDOExtraData.GetString(zid, ("slot" + slot).GetStableHashCode(), null) != null;
     }
     internal static string CleanString(int hash, string text)
     {
@@ -269,7 +269,7 @@ public sealed class Plugin : BaseUnityPlugin
         {
             var savedStrings = strings;
             bool Marker(KeyValuePair<int, int> p) => p.Key == Contamination.EntityKey || p.Key == Contamination.QueueKey ||
-                (unchecked(p.Key - Contamination.QueueKey) > 0 && savedStrings.Any(s => s.Key == Contamination.StableHash("slot" + unchecked(p.Key - Contamination.QueueKey))));
+                (unchecked(p.Key - Contamination.QueueKey) > 0 && savedStrings.Any(s => s.Key == ("slot" + unchecked(p.Key - Contamination.QueueKey)).GetStableHashCode()));
             if (ints.Any(Marker)) ints = ints.Where(p => !Marker(p)).ToList();
             List<KeyValuePair<int, byte[]>>? cleanBytes = null;
             for (int i = 0; i < byteArray.Count; i++)
