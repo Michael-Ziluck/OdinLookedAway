@@ -34,6 +34,7 @@ internal static class Program
     private static void Run(string game)
     {
         Plugin.Log = new ManualLogSource("OdinLookedAway checks");
+        HashChecks();
         PayloadChecks();
         AuditWriters(Path.Combine(game, "valheim_Data/Managed/assembly_valheim.dll"));
         PatchTargetChecks();
@@ -48,6 +49,18 @@ internal static class Program
     {
         assertions++;
         if (!condition) throw new InvalidOperationException(message);
+    }
+    private static void HashChecks()
+    {
+        foreach (string key in new[] { "", "cheated", "cheatedQueued", "items", "itemData", "slot3", "a\0b", "ab\0c", "\u03a9\u2661", "\ud83d\ude00" })
+            Assert(Contamination.StableHash(key) == key.GetStableHashCode(), "payload hashes agree with the game's hash function");
+        for (int index = 0; index <= ushort.MaxValue; index++)
+        {
+            string key = index + "_itemData";
+            Assert(Contamination.StableHash(key) == key.GetStableHashCode(), "indexed item hashes agree with the game's hash function");
+            Assert(Contamination.IsItemKey(key.GetStableHashCode()), "every supported indexed item key is recognized");
+        }
+        Assert(Contamination.EntityKey == ZDOVars.s_cheated && Contamination.QueueKey == ZDOVars.s_cheatedQueued, "marker constants agree with actual game constants");
     }
     private static void AuditWriters(string gameAssembly)
     {
@@ -127,6 +140,16 @@ internal static class Program
             for (int i = 0; i < before.Length; i++)
                 Assert(cleaned[i] == (fixture.flags.Contains(i) ? (byte)(before[i] & 0xfe) : before[i]), "only cheat bits are changed");
             Assert(ReferenceEquals(cleaned, Contamination.CleanPayload(cleaned, inventory)), "cleaning is idempotent");
+            foreach (int length in new[] { 0, 1, 2, 5, before.Length - 1 }.Concat(fixture.flags).Distinct())
+            {
+                byte[] truncated = before.Take(length).ToArray();
+                byte[] unchanged = (byte[])truncated.Clone();
+                int key = inventory ? Contamination.InventoryKey : Contamination.ItemKey;
+                Assert(ReferenceEquals(truncated, Plugin.CleanBytes(key, truncated)), "truncated payload is returned intact");
+                Assert(truncated.SequenceEqual(unchanged), "failed parsing leaves every caller-owned byte unchanged");
+            }
+            byte[] trailing = before.Concat(new byte[] { 0x55 }).ToArray();
+            Assert(ReferenceEquals(trailing, Plugin.CleanBytes(inventory ? Contamination.InventoryKey : Contamination.ItemKey, trailing)), "trailing bytes reject the whole payload without cleaning");
         }
         byte[] invalid = { 109, 0, 0, 0, 1, 0, 5 };
         Assert(ReferenceEquals(invalid, Plugin.CleanBytes(Contamination.InventoryKey, invalid)), "truncated data is preserved");
@@ -153,6 +176,10 @@ internal static class Program
         inventory.GetAllItems().Add(new ItemDrop.ItemData { m_cheated = true });
         Hook("InventoryBoundaryPatch", "Postfix").Invoke(null, new object[] { inventory });
         Assert(inventory.GetAllItems().All(i => !i.m_cheated), "inventory boundaries clear transferred flags");
+        var incoming = new ItemDrop.ItemData { m_cheated = true, m_stack = 17, m_durability = 15.125f };
+        Hook("InventoryBoundaryPatch", "Prefix").Invoke(null, new object?[] { inventory, new object?[] { 4, null, "ignored", incoming } });
+        Assert(!incoming.m_cheated && incoming.m_stack == 17 && incoming.m_durability == 15.125f, "incoming items clear only their cheat flag");
+        Hook("InventoryBoundaryPatch", "Postfix").Invoke(null, new object[] { new Inventory(false) });
         // Compile the production field-store transpiler into a minimal writer.
         // Both true and false inputs must store false without invalidating IL.
         var field = typeof(ItemDrop.ItemData).GetField("m_cheated")!;
